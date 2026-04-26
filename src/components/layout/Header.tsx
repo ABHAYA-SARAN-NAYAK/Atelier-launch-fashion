@@ -28,6 +28,14 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img src="/logo.jpg" alt="Atelier Launch" className="h-12 w-auto object-contain" />
+            <div className="flex items-baseline gap-1 hidden sm:flex">
+              <span className="text-2xl font-display font-semibold text-primary-light dark:text-primary-dark tracking-wide">
+                Atelier
+              </span>
+              <span className="text-2xl font-display font-light text-accent">
+                Launch
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
