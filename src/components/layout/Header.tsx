@@ -27,7 +27,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Atelier Launch" className="h-12 w-auto object-contain" />
+            <img src="/logo.jpg" alt="Atelier Launch" className="h-12 w-auto object-contain" />
           </Link>
 
           {/* Desktop Navigation */}
