@@ -109,17 +109,14 @@ export const useStore = create<AppState>()(
       },
 
       checkAuth: async () => {
-        console.log('Checking auth...');
         try {
           const session = await authApi.getSession();
           if (session?.user) {
-            console.log('Found session user:', session.user.id);
             const authUser = session.user;
 
             // Check if we have pending signup data in localStorage
             const pendingSignup = localStorage.getItem('pending_signup');
             if (pendingSignup) {
-              console.log('Processing pending signup data...');
               try {
                 const userData = JSON.parse(pendingSignup);
                 // Create profile with captured data
@@ -176,8 +173,6 @@ export const useStore = create<AppState>()(
                 isAuthenticated: true 
               });
             }
-          } else {
-            console.log('No session');
           }
         } catch (error) {
           console.error('Auth check error:', error);
@@ -276,16 +271,13 @@ export const useStore = create<AppState>()(
 // Auth listener — only handles sign-out & token refresh.
 // Sign-in is handled by store.login() / store.signup() to avoid race conditions.
 supabase.auth.onAuthStateChange(async (event, _session) => {
-  console.log('Auth event:', event);
   const store = useStore.getState();
 
   if (event === 'SIGNED_OUT') {
-    console.log('User signed out');
     store.setUser(null);
     store.setDesignerProfile(null);
     useStore.setState({ isAuthenticated: false, isDesignerVerified: false, cartItems: [] });
   } else if (event === 'TOKEN_REFRESHED') {
-    console.log('Token refreshed');
     // Optionally re-check auth to refresh profile data
     if (!store.isAuthenticated) {
       await store.checkAuth();
