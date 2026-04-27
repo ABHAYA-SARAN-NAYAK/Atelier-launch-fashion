@@ -112,19 +112,21 @@ export function CollectionCreatePage() {
         views: 0,
       });
 
-      for (const product of products) {
-        await productsApi.create({
-          collection_id: collection.id,
-          name: product.name,
-          description: product.description,
-          price: parseFloat(product.price),
-          quantity_available: parseInt(product.quantity),
-          sizes_available: product.sizes,
-          materials: product.materials,
-          primary_image: product.primaryImage,
-          sold_count: 0,
-        });
-      }
+      await Promise.all(
+        products.map((product) =>
+          productsApi.create({
+            collection_id: collection.id,
+            name: product.name,
+            description: product.description,
+            price: parseFloat(product.price),
+            quantity_available: parseInt(product.quantity),
+            sizes_available: product.sizes,
+            materials: product.materials,
+            primary_image: product.primaryImage,
+            sold_count: 0,
+          })
+        )
+      );
 
       toast.success('Collection created successfully!');
       navigate('/dashboard?tab=collections');
