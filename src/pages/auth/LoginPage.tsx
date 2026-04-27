@@ -32,7 +32,12 @@ export function LoginPage() {
     setError('');
     try {
       await loginWithEmail(email, password);
-      navigate('/');
+      const user = useStore.getState().user;
+      if (user?.user_type === 'student_designer' || user?.user_type === 'pro_designer') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err: unknown) {
       console.error('Login failed:', err);
       const message = err instanceof Error ? err.message : 'Invalid email or password.';
