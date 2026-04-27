@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Trash2, Image } from 'lucide-react';
 import { Button, Input, Card } from '../../components/ui';
-import { collectionsApi, productsApi } from '../../lib/api';
+import { collectionsApi, productsApi, storageApi } from '../../lib/api';
 import { useStore } from '../../lib/store';
 import { COLLECTION_TAGS } from '../../types';
 import toast from 'react-hot-toast';
@@ -282,12 +282,33 @@ export function CollectionCreatePage() {
                           value={product.quantity}
                           onChange={e => updateProduct(index, 'quantity', e.target.value)}
                         />
-                        <Input
-                          label="Image URL"
-                          placeholder="https://..."
-                          value={product.primaryImage}
-                          onChange={e => updateProduct(index, 'primaryImage', e.target.value)}
-                        />
+                        <div>
+                          <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                            Product Image
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  toast.loading('Uploading...', { id: `upload-${index}` });
+                                  const url = await storageApi.uploadImage(file);
+                                  updateProduct(index, 'primaryImage', url);
+                                  toast.success('Image uploaded!', { id: `upload-${index}` });
+                                } catch (error) {
+                                  toast.error('Upload failed. Did you create the product-images bucket?', { id: `upload-${index}` });
+                                }
+                              }}
+                              className="flex-1 w-full px-4 py-2 text-sm rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                            />
+                            {product.primaryImage && (
+                              <img src={product.primaryImage} alt="Preview" className="w-10 h-10 rounded-lg object-cover border border-border-light dark:border-border-dark" />
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       <div className="mt-4">

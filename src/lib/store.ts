@@ -18,6 +18,7 @@ interface AppState {
   }>;
   isCartOpen: boolean;
   isLoading: boolean;
+  isCheckingAuth: boolean;
 
   setUser: (user: User | null) => void;
   setDesignerProfile: (profile: DesignerProfile | null) => void;
@@ -49,6 +50,7 @@ export const useStore = create<AppState>()(
       cartItems: [],
       isCartOpen: false,
       isLoading: false,
+      isCheckingAuth: true, // IMPORTANT: True by default to prevent early redirects on refresh
 
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       
@@ -110,6 +112,7 @@ export const useStore = create<AppState>()(
 
       checkAuth: async () => {
         console.log('Checking auth...');
+        set({ isCheckingAuth: true });
         try {
           const session = await authApi.getSession();
           if (session?.user) {
@@ -181,6 +184,8 @@ export const useStore = create<AppState>()(
           }
         } catch (error) {
           console.error('Auth check error:', error);
+        } finally {
+          set({ isCheckingAuth: false });
         }
       },
 

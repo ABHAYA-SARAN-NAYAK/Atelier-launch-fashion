@@ -41,7 +41,7 @@ function DesignerRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { checkAuth, isLoading } = useStore();
+  const { checkAuth, isLoading, isCheckingAuth } = useStore();
 
   useEffect(() => {
     checkAuth();
@@ -49,7 +49,7 @@ function App() {
   }, []);
 
 
-  if (isLoading) {
+  if (isLoading || isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark">
         <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full" />
