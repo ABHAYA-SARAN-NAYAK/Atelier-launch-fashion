@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../../components/ui';
 import { useStore } from '../../lib/store';
 
 export function LoginPage() {
-  const { loginWithGoogle, isLoading } = useStore();
+  const { loginWithGoogle, loginWithEmail, isLoading } = useStore();
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -16,6 +19,23 @@ export function LoginPage() {
     } catch (err: unknown) {
       console.error('Login failed:', err);
       const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setError(message);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+    setError('');
+    try {
+      await loginWithEmail(email, password);
+      navigate('/');
+    } catch (err: unknown) {
+      console.error('Login failed:', err);
+      const message = err instanceof Error ? err.message : 'Invalid email or password.';
       setError(message);
     }
   };
@@ -49,6 +69,52 @@ export function LoginPage() {
               </div>
             </div>
           )}
+
+          <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full mt-2" 
+              isLoading={isLoading}
+              variant="primary"
+            >
+              Sign In
+            </Button>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-light dark:border-border-dark"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-card-light dark:bg-card-dark text-secondary-light dark:text-secondary-dark">Or log in with</span>
+            </div>
+          </div>
 
           <Button 
             onClick={handleGoogleLogin} 

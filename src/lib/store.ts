@@ -22,6 +22,8 @@ interface AppState {
   setUser: (user: User | null) => void;
   setDesignerProfile: (profile: DesignerProfile | null) => void;
   loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string, pass: string) => Promise<void>;
+  signupWithEmail: (email: string, pass: string, data: Record<string, any>) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   
@@ -65,6 +67,40 @@ export const useStore = create<AppState>()(
           throw err;
         }
         // It redirects, so we don't set isLoading to false here to prevent flashing
+      },
+
+      loginWithEmail: async (email, pass) => {
+        set({ isLoading: true });
+        try {
+          await authApi.signInWithEmail(email, pass);
+          await get().checkAuth();
+        } catch (err: unknown) {
+          console.error('Email login failed:', err);
+          throw err;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      signupWithEmail: async (email, pass, data) => {
+        set({ isLoading: true });
+        try {
+          // Pass metadata to Supabase for the handle_new_user trigger
+          const metadata = {
+            full_name: data.fullName,
+            user_type: data.userType === 'designer' ? 'student_designer' : 'buyer',
+            school: data.school,
+            graduation_year: data.graduationYear,
+            specialization: data.specialization
+          };
+          await authApi.signUpWithEmail(email, pass, metadata);
+          await get().checkAuth();
+        } catch (err: unknown) {
+          console.error('Email signup failed:', err);
+          throw err;
+        } finally {
+          set({ isLoading: false });
+        }
       },
 
       logout: async () => {

@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,9 @@ import { useState } from 'react';
 
 const signupSchema = z.object({
   userType: z.enum(['buyer', 'designer']),
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
   school: z.string().optional(),
   graduationYear: z.string().optional(),
   specialization: z.string().optional(),
@@ -32,7 +35,8 @@ type SignupForm = z.infer<typeof signupSchema>;
 
 export function SignupPage() {
   const [searchParams] = useSearchParams();
-  const { loginWithGoogle, isLoading } = useStore();
+  const navigate = useNavigate();
+  const { loginWithGoogle, signupWithEmail, isLoading } = useStore();
   const userTypeFromUrl = searchParams.get('type') === 'designer' ? 'designer' : 'buyer';
 
   const [error, setError] = useState('');
@@ -56,14 +60,29 @@ export function SignupPage() {
   const onSubmit = async (data: SignupForm) => {
     setError('');
     try {
+      await signupWithEmail(data.email, data.password, data);
+      navigate('/');
+    } catch (err: unknown) {
+      console.error('Signup failed:', err);
+      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      setError(message);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setError('');
+    try {
       // Save their choices to local storage before leaving the app
-      localStorage.setItem('pending_signup', JSON.stringify(data));
+      localStorage.setItem('pending_signup', JSON.stringify({
+        ...watch(),
+        fullName: watch('fullName') || 'User'
+      }));
       
       // Trigger Google Auth
       await loginWithGoogle();
     } catch (err: unknown) {
       console.error('Signup failed:', err);
-      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      const message = err instanceof Error ? err.message : 'Google Registration failed. Please try again.';
       setError(message);
     }
   };
@@ -127,6 +146,47 @@ export function SignupPage() {
               </button>
             </div>
 
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                  placeholder="John Doe"
+                  {...register('fullName')}
+                />
+                {errors.fullName && <p className="text-sm text-red-500 mt-1">{errors.fullName.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                  placeholder="you@example.com"
+                  {...register('email')}
+                />
+                {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-primary-light dark:text-primary-dark mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className="w-full px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                  placeholder="••••••••"
+                  {...register('password')}
+                />
+                {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
+              </div>
+            </div>
+
             {/* Designer-specific fields */}
             {userType === 'designer' && (
               <div className="space-y-4 p-4 bg-accent/5 rounded-lg">
@@ -178,6 +238,25 @@ export function SignupPage() {
 
             <Button 
               type="submit" 
+              className="w-full" 
+              isLoading={isLoading}
+              variant="primary"
+            >
+              Sign Up
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border-light dark:border-border-dark"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-card-light dark:bg-card-dark text-secondary-light dark:text-secondary-dark">Or sign up with</span>
+              </div>
+            </div>
+
+            <Button 
+              type="button" 
+              onClick={handleGoogleSignup}
               className="w-full flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-100 dark:bg-white dark:hover:bg-gray-200 border border-gray-300 shadow-sm" 
               isLoading={isLoading}
               variant="primary"

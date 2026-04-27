@@ -24,6 +24,27 @@ export const authApi = {
     return data;
   },
 
+  signInWithEmail: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  signUpWithEmail: async (email: string, password: string, userData: Record<string, any>) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: userData,
+      },
+    });
+    if (error) throw error;
+    return data;
+  },
+
   signOut: async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
